@@ -1,4 +1,4 @@
-"""LLM Service for clause extraction using AWS Bedrock, Groq, or OpenAI."""
+"""LLM Service for clause extraction using AWS Bedrock, Groq, OpenAI, or Ollama."""
 import json
 from typing import Optional
 from app.config import settings
@@ -82,6 +82,25 @@ class LLMService:
         result = json.loads(response["body"].read())
         return result["content"][0]["text"]
 
+    def _call_ollama(self, system_prompt, user_prompt):
+        """Call Ollama local LLM (OpenAI-compatible API)."""
+        from openai import OpenAI
+        client = OpenAI(
+            base_url=settings.ollama_base_url,
+            api_key="ollama"  # Ollama doesn't need a real key
+        )
+
+        response = client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.1,
+            max_tokens=2000
+        )
+        return response.choices[0].message.content.strip()
+
     def _call_groq_or_openai(self, system_prompt, user_prompt):
         """Call Groq or OpenAI API."""
         if self.provider == "groq":
@@ -120,6 +139,8 @@ class LLMService:
             # Call the appropriate provider
             if self.provider == "bedrock":
                 content = self._call_bedrock(SYSTEM_PROMPT, prompt)
+            elif self.provider == "ollama":
+                content = self._call_ollama(SYSTEM_PROMPT, prompt)
             else:
                 content = self._call_groq_or_openai(SYSTEM_PROMPT, prompt)
 

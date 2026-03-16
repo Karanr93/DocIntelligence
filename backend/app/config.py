@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     # Bedrock
     bedrock_region: str = "us-east-1"
 
+    # Ollama (local)
+    ollama_base_url: str = "http://localhost:11434/v1"
+
     # AWS
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
