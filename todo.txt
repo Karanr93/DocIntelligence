@@ -1,0 +1,82 @@
+Role : You are an AI Architect, specialized in building products, workflows, solutions.
+Action : Your task is to analyze all the requirement thoroughly and propose a solution and implement it once approved
+Context : A business head wants to implement a product and below are the requirements.
+	there are 1000 pdf documents. The documents will have multiple clauses, for medical, Finance, Sports
+	1) Do OCR
+	2) Save only the relevant pages that talks about the clauses. There will be prompt to extract the clause data.
+	3) Save it as document 1 {Medical : only the relevant data on page level,
+							  Finance : only the relevant data on page level,
+							  Sports : only the relevant data on page level}
+		Do this for all documents.
+	4) There are Multiple users with different roles. Medical clinician will have to see only the medical clause extracted details highlighted in the pdf. 
+	5) Handle Hallucination, so that the prompt does not give wrong results with LLM Calls.
+	6) All these OCR, relevant data on page level has to be stored. 
+	7) how to make sure that when i use third party LLM, my data is not going to their servers? as its sensitive data
+	8) there should be a dashboard, maybe 700/1000 talks about Medical clause, 200 talks about Finance, 400 talks about Sports. 
+	   - If i click on the clause only those documents should be shown. when i click on the document , only the relevant data gets highlighted.
+	9) Should i go for Rule based or LLM. i want 98% metrics
+Expectation : Ask me questions so that you will know what you are building. once i confirm you understood, you need to build it. This is a POC. 
+
+
+Documents & OCR
+
+Are the PDFs scanned images (need full OCR) or do they have selectable text (just need text extraction)? Or a mix? -> Lets assume full OCR
+Average page count per document? (10 pages? 100 pages?) -> lets assume 10
+Are documents in English only? -> Yes
+Clauses & Extraction
+4. Are the clause types fixed to Medical/Finance/Sports, or will more categories be added later? -> More categories to be added later
+5. Do you have sample prompts or example clauses for each category? Or do I define what constitutes a "Medical clause" vs "Finance clause"? -> You define
+6. Can a single page contain multiple clause types (e.g., both Medical and Finance on page 5)? -> Yes overlap can occur
+
+Data Privacy (Critical)
+7. For the "no data to third-party servers" requirement — are you open to running a local/self-hosted LLM (e.g., Ollama with Llama/Mistral)? Or do you have an enterprise agreement with any LLM provider (Azure OpenAI, AWS Bedrock) that keeps data within your boundary? -> Lets assume enterprise agreement with Azure OpenAI
+8. Is this on-premise or cloud (AWS/Azure/GCP)?->  Azure
+
+Dashboard & Users
+9. How many users/roles? Just Medical Clinician, Finance Analyst, Sports Analyst — or more? -> For now its these 3
+10. "Highlighted in the PDF" — do you mean render the actual PDF with highlighted text, or show extracted text with highlights in a web UI? -> Render the actual PDF with highlighted text
+11. Is authentication needed (login system) or is role-based filtering enough for the POC? -> Role based filtering
+
+Accuracy & Approach
+12. When you say 98% metrics — is that precision, recall, F1, or all three? And do you have a labeled test set to measure against? -> F1, i dont have Ground truth
+13. My recommendation: Hybrid approach — rule-based keyword matching as a first pass + LLM for ambiguous cases + human-in-the-loop for verification. Pure rule-based won't hit 98% on nuanced clauses; pure LLM risks hallucination. Does this hybrid approach work for you? -> Yes
+
+POC Scope
+14. For the POC, should I build with ~5-10 sample documents, or do you have all 1000 ready? -> 10 Sample documents is fine
+15. Tech stack preference? I'm thinking Python backend (FastAPI) + React frontend + local LLM via Ollama + SQLite/PostgreSQL for the POC. Any constraints? -> Yes
+
+Please answer these and I'll present the full architecture diagram and implementation plan for your approval before building.
+
+
+PDF & OCR Specifics
+
+Are these PDFs contracts, legal agreements, insurance policies, research papers, or a mix of document types? (This affects how clauses are structured)
+Do the PDFs have consistent formatting (headers, sections, numbered clauses) or are they unstructured free-form text?
+Do documents contain tables, charts, or images within pages that carry clause-relevant information?
+Clause Extraction Logic
+4. When you say "clause" — do you mean formal legal/contractual clauses (e.g., "Section 4.2: Medical Coverage") or any paragraph/section that discusses a topic like medical/finance/sports?
+5. For the extracted data — do you want verbatim text from the PDF, or a summarized/structured version, or both?
+6. Should the system extract metadata too? (e.g., clause number, effective date, parties involved, dollar amounts)
+
+Highlighting & PDF Rendering
+7. When highlighting in the actual PDF — should it create a new annotated PDF file (with highlight annotations baked in) that users can download? Or render it in-browser with overlay highlights?
+8. Should highlights be color-coded by clause type? (e.g., Medical=blue, Finance=green, Sports=orange)
+
+Hallucination Handling
+9. For the hybrid approach — when the LLM is uncertain, should the system flag it for human review (queue-based) or just mark it as "low confidence" in the dashboard?
+10. Do you want a confidence score displayed per extraction? (e.g., "Medical clause detected — 92% confidence")
+
+Storage & Scale
+11. Do you need version tracking? (e.g., if the same document is re-processed with updated prompts, keep history?)
+12. For the POC — should I generate 10 synthetic sample PDFs with realistic clause content, or will you provide them?
+
+Dashboard Details
+13. The dashboard shows 700/1000 Medical, 200 Finance, 400 Sports — should these be clickable cards/tiles, a bar chart, or both?
+14. Do you need search/filter within a clause category? (e.g., search within all Medical documents for "diabetes")
+15. Should the dashboard show processing status? (e.g., "850/1000 processed, 150 pending")
+
+Deployment & Integration
+16. Azure OpenAI — do you already have an Azure OpenAI resource deployed, or should I design with configuration placeholders?
+17. For Azure hosting — are you thinking Azure App Service, AKS (Kubernetes), or Azure Container Apps for the POC?
+18. Any existing systems this needs to integrate with? (e.g., existing document management system, Active Directory for roles)
+
